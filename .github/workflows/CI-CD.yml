@@ -69,5 +69,5 @@ jobs:
       uses: azure/webapps-deploy@v2
       with: 
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        package: './target/*.war'
+        package: '*.war'
 
