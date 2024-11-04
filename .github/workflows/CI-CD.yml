@@ -1,0 +1,73 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Java CI/CD with Maven/App Service
+
+on:
+ workflow_dispatch
+
+env:
+  AZURE_WEBAPP_NAME: kotlindemo  # set this to your application's name
+  # AZURE_WEBAPP_PACKAGE_PATH: ${{ github.workspace }} # set this to the path to your web app project
+  JAVA_VERSION: '1.8'                # set this to the node version to use
+
+jobs:
+
+  #   provision-webapp:
+#     runs-on: ubuntu-latest
+#     steps:
+#     # Provision a new Web App with wildfly container
+#     - name: Checkout
+#       uses: actions/checkout@v2.0.0
+#       with:
+#         repository: azure-Samples/app-service-wildfly
+#     - name: Azure authentication
+#       uses: azure/login@v1
+#       with:
+#         creds: ${{ secrets.AZURE_CREDENTIALS  }}
+#     - name: ACR authentication
+#       uses: azure/docker-login@v1
+#       with:
+#         login-server: ${{ env.CONTAINER_REGISTRY }}
+#         username: ${{ secrets.REGISTRY_USERNAME }}
+#         password: ${{ secrets.REGISTRY_PASSWORD }}    
+#     - name: Docker Build & Push to ACR
+#       run: |
+#         docker build . -t ${{ env.CONTAINER_REGISTRY }}/wildfly
+#         docker push ${{ env.CONTAINER_REGISTRY }}/wildfly
+#     - name: Azure CLI script to create a new Web App for Container
+#       uses: azure/CLI@v0-beta
+#       with:
+#         azcliversion: latest
+#         inlineScript: |
+#           az account show
+#           az webapp create --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --plan ${{ env.AZURE_APP_PLAN }} --name ${{ env.AZURE_WEBAPP_NAME }}  -i ${{ env.CONTAINER_REGISTRY }}/wildfly
+
+  build-and-deploy:
+    # needs:  provision-webapp
+    
+    runs-on: ubuntu-latest  
+    steps:
+    - uses: actions/checkout@master
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+    - name: Build with Maven
+      run: |
+        mvn clean install --file pom.xml -Dmaven.test.skip=true
+    - name: Azure authentication
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS  }}
+    - name: 'Deploy to Azure WebApp'
+      uses: azure/webapps-deploy@v2
+      with: 
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        package: './target/*.war'
+
