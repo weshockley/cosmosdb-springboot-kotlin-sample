@@ -21,8 +21,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '1.8'
-          distribution: 'microsoft'
-
+     
       - name: Build with Maven
         run: mvn clean install
 
