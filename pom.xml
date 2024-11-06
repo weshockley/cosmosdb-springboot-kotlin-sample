@@ -265,6 +265,8 @@
       </plugin>
 
     </plugins>
+
+    <finalName>ROOT</finalName>       
   </build>
 
   <repositories>
